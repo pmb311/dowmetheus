@@ -80,7 +80,8 @@ class PrometheusCollector(ABC):
     def __init__(self, collection_interval=COLLECTION_INTERVAL_SECONDS_DEFAULT,
                  listen_port=LISTEN_PORT_DEFAULT):
         '''Initialize a process capable of serving key-value pairs in a format that can be scraped
-        by a Prometheus monitoring server. Useful links:
+        by a Prometheus monitoring server. The metrics are exposed at localhost:<listen_port>/metrics.
+        Useful links:
         https://prometheus.io/
         https://github.com/prometheus/prometheus/wiki/Default-port-allocations'''
 
