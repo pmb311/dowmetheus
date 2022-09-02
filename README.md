@@ -4,7 +4,7 @@ Dowmetheus is a small [Prometheus exporter](https://prometheus.io/docs/instrumen
 
 ## Installation and Usage
 
-Dowmetheus makes use of the [prometheus_client](https://github.com/prometheus/client_python) library, as well as [requests](https://pypi.org/project/requests/), and requires outbound internet access. It is expected to function with any minor version of Python3 on Linux, MacOS, or Windows, but has only been tested with Python3.10 on Ubuntu Linux 22.04. Example invocation:
+Dowmetheus makes use of the [prometheus_client](https://github.com/prometheus/client_python) library, as well as [requests](https://pypi.org/project/requests/), and requires outbound internet access. An API key for MarketStack is also required, at [subscription level](https://marketstack.com/product) Basic or higher. The utility will expect this API key to be assigned to environment variable $DATASOURCE_API_KEY. Dowmetheus is expected to function with any minor version of Python3 on Linux, MacOS, or Windows, but has only been tested with Python3.10 on Ubuntu Linux 22.04. Example invocation:
 
 ```/bin/python3 main.py```
 
