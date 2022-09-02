@@ -8,9 +8,30 @@ Dowmetheus makes use of the [prometheus_client](https://github.com/prometheus/cl
 
 ```/bin/python3 main.py```
 
+or simply
+
+```./main.py```
+
 The automated test suite can be run with the following command:
 
 ```/bin/python3 -m unittest -v main.py```
+
+There are several configuration parameters exposed through the command line interface.
+
+```./main.py --help
+usage: main.py [-h] [--collection-interval [COLLECTION_INTERVAL]] [--listen-port [LISTEN_PORT]] [--log-level [{NOTSET,DEBUG,INFO,WARN,ERROR,CRITICAL}]]
+
+Prometheus exporter for Dow Jones Industrial Average component share prices
+
+options:
+  -h, --help            show this help message and exit
+  --collection-interval [COLLECTION_INTERVAL]
+                        Frequency at which to update share prices, in seconds
+  --listen-port [LISTEN_PORT]
+                        The port that Prometheus will connect to and scrape metrics from
+  --log-level [{NOTSET,DEBUG,INFO,WARN,ERROR,CRITICAL}]
+                        Log level
+```
 
 ## Related Infrastructure
 
