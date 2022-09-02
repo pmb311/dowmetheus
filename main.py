@@ -61,7 +61,6 @@ class GetMarketStackLastSharePrice(object):
     https://marketstack.com/documentation'''
     def __init__(self, symbols: dict, access_key: str, interval: int,
                  url: str = "https://api.marketstack.com/v1/intraday/latest") -> None:
-
         assert symbols and access_key, "symbols and access key may not resolve to None"
         # Send one request per exchange, and aggregate into a single list
         symbols_by_exchange = defaultdict(list)
@@ -170,7 +169,7 @@ def main() -> None:
     assert api_key, "Environment variable DATASOURCE_API_KEY is required to proceed. Exiting."
 
     logging.basicConfig(level=args.log_level,
-                       format="%(asctime)s %(levelname)s %(message)s")
+                        format="%(asctime)s %(levelname)s %(message)s")
     SharePricePrometheusCollector(SYMBOLS, api_key, collection_interval=args.collection_interval,
                                   listen_port=args.listen_port)
 
@@ -187,7 +186,7 @@ class TestDowmetheus(unittest.TestCase):
 
     def test_get_last_price_map(self):
         '''Test happy path for GetMarketStackLastSharePrice.get_last_price_map(),
-           checking that we have 1 record per symbol'''
+        checking that we have 1 record per symbol'''
         api_key = getenv("DATASOURCE_API_KEY")
         symbols = {"SNAP": "XNYS", "TSLA": "XNAS"}
         obj = GetMarketStackLastSharePrice(symbols, api_key, 900)
