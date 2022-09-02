@@ -1,3 +1,5 @@
+#!/bin/env python3
+
 '''Exporter utility serving Dow 30 share prices to a Prometheus monitoring server.
 Comprehensive Prometheus documentation can be found at https://prometheus.io/'''
 
@@ -16,8 +18,8 @@ from prometheus_client.core import GaugeMetricFamily, REGISTRY
 import requests
 
 
-# In real life this would be much shorter but sub-15m interval requires a more advanced
-# MarketStack subscription tier
+# In real life this would be much shorter but sub-15m interval requires a
+# more advanced MarketStack subscription tier
 COLLECTION_INTERVAL_SECONDS_DEFAULT=900
 # Dict of Dow 30 components with their respective exchange keys
 SYMBOLS = {
@@ -56,12 +58,12 @@ LISTEN_PORT_DEFAULT=9927
 
 
 class GetMarketStackLastSharePrice(object):
-    '''Request an intraday report for a list of symbols from MarketStack at specified interval
-    in seconds, using access_key to authenticate. Full documentation available at
-    https://marketstack.com/documentation'''
+    '''Request an intraday report for a list of symbols from MarketStack at
+    specified interval in seconds, using access_key to authenticate.
+    Full documentation available at https://marketstack.com/documentation'''
     def __init__(self, symbols: dict, access_key: str, interval: int,
                  url: str = "https://api.marketstack.com/v1/intraday/latest") -> None:
-        assert symbols and access_key, "symbols and access key may not resolve to None"
+        assert symbols and access_key, "symbols and access key may not be None"
         # Send one request per exchange, and aggregate into a single list
         symbols_by_exchange = defaultdict(list)
         for symbol, exchange in sorted(symbols.items()):
@@ -70,9 +72,11 @@ class GetMarketStackLastSharePrice(object):
 
         # TODO - parallelize these requests to better synchronize quote timing
         for exchange, symbols_for_exchange in symbols_by_exchange.items():
-            logging.debug("About to send GET request to url %s for symbols %s on exchange %s",
+            logging.debug("About to send GET request to url %s for symbols %s"
+                          " on exchange %s",
                           url, symbols_for_exchange, exchange)
-            # TODO - paginate replies. There are only 30 Dow components, so we're ok for now
+            # TODO - paginate replies. There are only 30 Dow components,
+            # so we're ok for now
             reply = requests.get(url,
                                  params={"access_key": access_key,
                                          "symbols": ",".join(symbols_for_exchange),
@@ -97,8 +101,9 @@ class GetMarketStackLastSharePrice(object):
         return last_price_map
 
 class PrometheusCollector(ABC):
-    '''Initialize a process capable of serving key-value pairs in a format that can be scraped
-    by a Prometheus monitoring server. The metrics are exposed at localhost:<listen_port>/metrics.
+    '''Initialize a process capable of serving key-value pairs in a format
+    that can be scraped by a Prometheus monitoring server.
+    The metrics are exposed at localhost:<listen_port>/metrics.
     Useful links:
     https://prometheus.io/docs/instrumenting/exporters/
     https://github.com/prometheus/prometheus/wiki/Default-port-allocations'''
@@ -128,11 +133,12 @@ class SharePricePrometheusCollector(PrometheusCollector):
     def collect(self) -> GaugeMetricFamily:
         '''Collect share prices for symbols every collection_interval seconds
         and express them as Prometheus metrics'''
-        share_prices = GaugeMetricFamily("share_price", "Last share price", labels=["symbol"])
-        get_market_stack_last_share_price = GetMarketStackLastSharePrice(self.symbols,
-                                                                         self.access_key,
-                                                                         self.collection_interval)
-        last_price_map = get_market_stack_last_share_price.get_last_price_map()
+        share_prices = GaugeMetricFamily("share_price", "Last share price",
+                                         labels=["symbol"])
+        obj = GetMarketStackLastSharePrice(self.symbols,
+                                           self.access_key,
+                                           self.collection_interval)
+        last_price_map = obj.get_last_price_map()
         for symbol in self.symbols.keys():
             try:
                 last_price = last_price_map[symbol]
@@ -140,24 +146,33 @@ class SharePricePrometheusCollector(PrometheusCollector):
                     share_prices.add_metric([symbol], last_price)
                 else:
                     # Report loudly if we encounter a null last price but don't crash
-                    logging.error("Last price is None for symbol %s, this is unexpected.", symbol)
+                    logging.error("Last price is None for symbol %s, "
+                                  "this is unexpected.", symbol)
             except KeyError:
                 # Report loudly if we're missing a symbol but don't crash
-                logging.exception("No last price data found for symbol %s, this is unexpected.",
+                logging.exception("No last price data found for symbol %s, "
+                                  "this is unexpected.",
                                   symbol)
         yield share_prices
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Prometheus exporter for Dow Jones "
-                                                 "Industrial Average component share prices")
+                                                 "Industrial Average component "
+                                                 "share prices")
     parser.add_argument("--collection-interval", type=int, nargs="?",
                         default=COLLECTION_INTERVAL_SECONDS_DEFAULT,
                         help="Frequency at which to update share prices, in seconds")
-    parser.add_argument("--listen-port", type=int, nargs="?", default=LISTEN_PORT_DEFAULT,
-                        help="The port that Prometheus will connect to and scrape metrics from")
-    parser.add_argument("--log-level", type=str, nargs="?", choices=["NOTSET", "DEBUG", "INFO",
-                                                                     "WARN", "ERROR", "CRITICAL"],
+    parser.add_argument("--listen-port", type=int, nargs="?",
+                        default=LISTEN_PORT_DEFAULT,
+                        help="The port that Prometheus will connect to "
+                             "and scrape metrics from")
+    parser.add_argument("--log-level", type=str, nargs="?", choices=["NOTSET",
+                                                                     "DEBUG",
+                                                                     "INFO",
+                                                                     "WARN",
+                                                                     "ERROR",
+                                                                     "CRITICAL"],
                         default="ERROR", help="Log level")
     args, unknown = parser.parse_known_args()
     if unknown:
@@ -166,11 +181,12 @@ def main() -> None:
     # Validate that we have an environment variable present for authenticating
     # to the market data source
     api_key = getenv("DATASOURCE_API_KEY")
-    assert api_key, "Environment variable DATASOURCE_API_KEY is required to proceed. Exiting."
+    assert api_key, "Environment variable DATASOURCE_API_KEY is required to proceed."
 
     logging.basicConfig(level=args.log_level,
                         format="%(asctime)s %(levelname)s %(message)s")
-    SharePricePrometheusCollector(SYMBOLS, api_key, collection_interval=args.collection_interval,
+    SharePricePrometheusCollector(SYMBOLS, api_key,
+                                  collection_interval=args.collection_interval,
                                   listen_port=args.listen_port)
 
 
@@ -194,8 +210,8 @@ class TestDowmetheus(unittest.TestCase):
         self.assertTrue(len(price_map.keys()) == 2)
 
     def test_null_symbols(self):
-        '''Test that passing an empty list of symbols to the GetMarketStackLastSharePrice
-        constructor raises an AssertionError'''
+        '''Test that passing an empty list of symbols to the
+        GetMarketStackLastSharePrice constructor raises an AssertionError'''
         with self.assertRaises(AssertionError):
             GetMarketStackLastSharePrice([], "foo", 900)
 
