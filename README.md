@@ -45,6 +45,8 @@ To run a Prometheus server that will ingest Dowmetheus' data in a local [Docker]
 
 Note that this instruction assumes that you have successfully installed the Docker packages on your local machine, and that port 9090 is unoccupied.
 
+<img src="https://github.com/pmb311/dowmetheus/blob/master/dowmetheus_prometheus_example.png" align="center" alt="Example"/>
+
 ### Grafana
 
 To run a Grafana server pre-configured with a local Prometheus datasource and a rudimentary dashboard with the Dowmetheus time-series data, run the following command in the root directory of this repository.
@@ -52,3 +54,5 @@ To run a Grafana server pre-configured with a local Prometheus datasource and a 
 ```docker run -d -p 3000:3000 -v "$(pwd)/grafana/datasources/:/etc/grafana/provisioning/datasources/" -v "$(pwd)/grafana/dashboards/:/etc/grafana/provisioning/dashboards/" grafana/grafana-enterprise```
 
 Like in Prometheus above, this instruction assumes that you have successfully installed the Docker packages on your local machine, and that port 3000 is unoccupied.
+
+<img src="https://github.com/pmb311/dowmetheus/blob/master/dowmetheus_grafana_example.png" align="center" alt="Example"/>
